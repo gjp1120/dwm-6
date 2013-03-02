@@ -1,0 +1,16 @@
+Index: dwm-6.0/dwm.c
+===================================================================
+--- dwm-6.0.orig/dwm.c
++++ dwm-6.0/dwm.c
+@@ -1936,7 +1936,10 @@ updategeom(void) {
+ 					m->num = i;
+ 					m->mx = m->wx = unique[i].x_org;
+ 					m->my = m->wy = unique[i].y_org;
+-					m->mw = m->ww = unique[i].width;
++          if (unique[i].screen_number == 0)
++            m->mw = m->ww = unique[i].width - 100; 
++          else 
++            m->mw = m->ww = unique[i].width;
+ 					m->mh = m->wh = unique[i].height;
+ 					updatebarpos(m);
+ 				}

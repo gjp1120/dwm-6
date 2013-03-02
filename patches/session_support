@@ -1,0 +1,72 @@
+Index: dwm-6.0/dwm.c
+===================================================================
+--- dwm-6.0.orig/dwm.c
++++ dwm-6.0/dwm.c
+@@ -20,7 +20,7 @@
+  *
+  * To understand everything else, start reading main().
+  */
+-
++#define _GNU_SOURCE
+ #define XK_MISCELLANY
+ #include <errno.h>
+ #include <locale.h>
+@@ -209,6 +209,7 @@ static Client *nexttiled(Client *c);
+ static void pop(Client *);
+ static void propertynotify(XEvent *e);
+ static void quit(const Arg *arg);
++static void restart(const Arg *arg);
+ static Monitor *recttomon(int x, int y, int w, int h);
+ static void resize(Client *c, int x, int y, int w, int h, Bool interact);
+ static void resizeclient(Client *c, int x, int y, int w, int h);
+@@ -1357,6 +1358,12 @@ quit(const Arg *arg) {
+ 	running = False;
+ }
+ 
++void
++restart(const Arg *arg) {
++  kill(getppid(), SIGUSR1);
++  running = False;
++}
++
+ Monitor *
+ recttomon(int x, int y, int w, int h) {
+ 	Monitor *m, *r = selmon;
+Index: dwm-6.0/config.def.h
+===================================================================
+--- dwm-6.0.orig/config.def.h
++++ dwm-6.0/config.def.h
+@@ -92,6 +92,7 @@ static Key keys[] = {
+ 	TAGKEYS(                        XK_8,                      7)
+ 	TAGKEYS(                        XK_9,                      8)
+ 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
++	{ MODKEY|ShiftMask,             XK_r,      restart,        {0} },
+ };
+ 
+ /* button definitions */
+Index: dwm-6.0/Makefile
+===================================================================
+--- dwm-6.0.orig/Makefile
++++ dwm-6.0/Makefile
+@@ -45,16 +45,21 @@ install: all
+ 	@echo installing executable file to ${DESTDIR}${PREFIX}/bin
+ 	@mkdir -p ${DESTDIR}${PREFIX}/bin
+ 	@cp -f dwm ${DESTDIR}${PREFIX}/bin
++	@cp -f dwm-session/dwm-session ${DESTDIR}${PREFIX}/bin
+ 	@chmod 755 ${DESTDIR}${PREFIX}/bin/dwm
+ 	@echo installing manual page to ${DESTDIR}${MANPREFIX}/man1
+ 	@mkdir -p ${DESTDIR}${MANPREFIX}/man1
+ 	@sed "s/VERSION/${VERSION}/g" < dwm.1 > ${DESTDIR}${MANPREFIX}/man1/dwm.1
+ 	@chmod 644 ${DESTDIR}${MANPREFIX}/man1/dwm.1
++	@mkdir -p ${DESTDIR}${PREFIX}/share/xsessions
++	@cp -f dwm.desktop ${DESTDIR}${PREFIX}/share/xsessions
+ 
+ uninstall:
+ 	@echo removing executable file from ${DESTDIR}${PREFIX}/bin
+ 	@rm -f ${DESTDIR}${PREFIX}/bin/dwm
++	@rm -f ${DESTDIR}${PREFIX}/bin/dwm-session
+ 	@echo removing manual page from ${DESTDIR}${MANPREFIX}/man1
+ 	@rm -f ${DESTDIR}${MANPREFIX}/man1/dwm.1
++	@rm -f ${DESTDIR}${PREFIX}/share/xsessions/dwm.desktop
+ 
+ .PHONY: all options clean dist install uninstall

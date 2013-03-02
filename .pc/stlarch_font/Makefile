@@ -46,11 +46,6 @@ install: all
 	@mkdir -p ${DESTDIR}${PREFIX}/bin
 	@cp -f dwm ${DESTDIR}${PREFIX}/bin
 	@cp -f dwm-session/dwm-session ${DESTDIR}${PREFIX}/bin
-	@mkdir -p ${DESTDIR}${PREFIX}/share/fonts/bitmap
-	@cp -f stlarch.pcf ${DESTDIR}${PREFIX}/share/fonts/bitmap
-	@mkfontscale ${DESTDIR}${PREFIX}/share/fonts/bitmap
-	@mkfontdir ${DESTDIR}${PREFIX}/share/fonts/bitmap
-	@mkfontscale ${DESTDIR}${PREFIX}/share/fonts/bitmap
 	@chmod 755 ${DESTDIR}${PREFIX}/bin/dwm
 	@echo installing manual page to ${DESTDIR}${MANPREFIX}/man1
 	@mkdir -p ${DESTDIR}${MANPREFIX}/man1
@@ -65,7 +60,6 @@ uninstall:
 	@rm -f ${DESTDIR}${PREFIX}/bin/dwm-session
 	@echo removing manual page from ${DESTDIR}${MANPREFIX}/man1
 	@rm -f ${DESTDIR}${MANPREFIX}/man1/dwm.1
-	@rm -f ${DESTDIR}${PREFIX}/share/fonts/bitmap/{font.dir,font.scale,stlarch.pcf}
 	@rm -f ${DESTDIR}${PREFIX}/share/xsessions/dwm.desktop
 
 .PHONY: all options clean dist install uninstall

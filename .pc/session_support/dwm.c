@@ -20,7 +20,7 @@
  *
  * To understand everything else, start reading main().
  */
-#define _GNU_SOURCE
+
 #define XK_MISCELLANY
 #include <errno.h>
 #include <locale.h>
@@ -209,7 +209,6 @@ static Client *nexttiled(Client *c);
 static void pop(Client *);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
-static void restart(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void resize(Client *c, int x, int y, int w, int h, Bool interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
@@ -1358,12 +1357,6 @@ quit(const Arg *arg) {
 	running = False;
 }
 
-void
-restart(const Arg *arg) {
-  kill(getppid(), SIGUSR1);
-  running = False;
-}
-
 Monitor *
 recttomon(int x, int y, int w, int h) {
 	Monitor *m, *r = selmon;
@@ -1936,10 +1929,7 @@ updategeom(void) {
 					m->num = i;
 					m->mx = m->wx = unique[i].x_org;
 					m->my = m->wy = unique[i].y_org;
-          if (unique[i].screen_number == 0)
-            m->mw = m->ww = unique[i].width - 100; 
-          else 
-            m->mw = m->ww = unique[i].width;
+					m->mw = m->ww = unique[i].width;
 					m->mh = m->wh = unique[i].height;
 					updatebarpos(m);
 				}
