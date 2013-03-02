@@ -42,7 +42,7 @@ Index: dwm-6.0/config.h
  #define TAGKEYS(KEY,TAG) \
  	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
  	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
-@@ -55,22 +60,30 @@ static const Layout layouts[] = {
+@@ -55,12 +60,20 @@ static const Layout layouts[] = {
  
  /* commands */
  static const char *dmenucmd[] = { "dmenu_run", "-fn", font, "-nb", colors[0][ColBG], "-nf", colors[0][ColFG], "-sb", colors[1][ColBG], "-sf", colors[1][ColFG], NULL };
@@ -64,11 +64,9 @@ Index: dwm-6.0/config.h
 +	{ (int)NULL,                    0x1008ff11,spawn,	         {.v = avollow} },
 +	{ (int)NULL,				            XK_Pause,  spawn,	         {.v = mpdtoggle} },
  	{ MODKEY,                       XK_b,      togglebar,      {0} },
--	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
-+	{ MODKEY,                       XK_j,    focusstack,     {.i = +1 } },
+ 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
  	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
- 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
- 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
+@@ -69,8 +82,8 @@ static Key keys[] = {
  	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
  	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
  	{ MODKEY,                       XK_Return, zoom,           {0} },
@@ -79,3 +77,24 @@ Index: dwm-6.0/config.h
  	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
  	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
  	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
+Index: dwm-6.0/Makefile
+===================================================================
+--- dwm-6.0.orig/Makefile
++++ dwm-6.0/Makefile
+@@ -6,7 +6,15 @@ include config.mk
+ SRC = dwm.c
+ OBJ = ${SRC:.c=.o}
+ 
+-all: options dwm
++all: options dwm build-dwmstatus build-dwm-session
++
++build-dwmstatus:
++	@echo "Building dwmstatus ..."
++	@make -C dwmstatus
++
++build-dwm-session:
++	@echo "Building dwm-session ..."
++	@make -C dwm-session
+ 
+ options:
+ 	@echo dwm build options:

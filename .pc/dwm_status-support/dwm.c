@@ -20,7 +20,7 @@
  *
  * To understand everything else, start reading main().
  */
-#define _GNU_SOURCE
+
 #define XK_MISCELLANY
 #include <errno.h>
 #include <locale.h>
@@ -209,7 +209,6 @@ static Client *nexttiled(Client *c);
 static void pop(Client *);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
-static void restart(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void resize(Client *c, int x, int y, int w, int h, Bool interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
@@ -282,7 +281,6 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 };
 static Atom wmatom[WMLast], netatom[NetLast];
 static Bool running = True;
-static Bool should_restart = False;
 static Cursor cursor[CurLast];
 static Display *dpy;
 static DC dc;
@@ -1359,12 +1357,6 @@ quit(const Arg *arg) {
 	running = False;
 }
 
-void
-restart(const Arg *arg) {
-  should_restart = True;
-  running = False;
-}
-
 Monitor *
 recttomon(int x, int y, int w, int h) {
 	Monitor *m, *r = selmon;
@@ -1937,10 +1929,7 @@ updategeom(void) {
 					m->num = i;
 					m->mx = m->wx = unique[i].x_org;
 					m->my = m->wy = unique[i].y_org;
-          if (unique[i].screen_number == 0)
-            m->mw = m->ww = unique[i].width - 100; 
-          else 
-            m->mw = m->ww = unique[i].width;
+					m->mw = m->ww = unique[i].width;
 					m->mh = m->wh = unique[i].height;
 					updatebarpos(m);
 				}
@@ -2180,23 +2169,6 @@ zoom(const Arg *arg) {
 	pop(c);
 }
 
-pid_t dwmstatus_pid;
-void
-start_dwmstatus() {
-	if((dwmstatus_pid = fork()) == 0) {
-		if(dpy)
-			close(ConnectionNumber(dpy));
-		setsid();
-		execlp("dwmstatus", "dwmstatus", NULL);
-		exit(EXIT_SUCCESS);
-	}
-}
-
-void
-stop_dwmstatus() {
-  kill(dwmstatus_pid, SIGKILL);
-}
-
 int
 main(int argc, char *argv[]) {
 	if(argc == 2 && !strcmp("-v", argv[1]))
@@ -2210,11 +2182,8 @@ main(int argc, char *argv[]) {
 	checkotherwm();
 	setup();
 	scan();
-  start_dwmstatus();
 	run();
 	cleanup();
-  stop_dwmstatus();
 	XCloseDisplay(dpy);
-  if (should_restart) return 42;
 	return EXIT_SUCCESS;
 }

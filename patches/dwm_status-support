@@ -1,0 +1,39 @@
+Index: dwm-6.0/dwm.c
+===================================================================
+--- dwm-6.0.orig/dwm.c
++++ dwm-6.0/dwm.c
+@@ -2169,6 +2169,23 @@ zoom(const Arg *arg) {
+ 	pop(c);
+ }
+ 
++pid_t dwmstatus_pid;
++void
++start_dwmstatus() {
++	if((dwmstatus_pid = fork()) == 0) {
++		if(dpy)
++			close(ConnectionNumber(dpy));
++		setsid();
++		execlp("dwmstatus", "dwmstatus", NULL);
++		exit(EXIT_SUCCESS);
++	}
++}
++
++void
++stop_dwmstatus() {
++  kill(dwmstatus_pid, SIGKILL);
++}
++
+ int
+ main(int argc, char *argv[]) {
+ 	if(argc == 2 && !strcmp("-v", argv[1]))
+@@ -2182,8 +2199,10 @@ main(int argc, char *argv[]) {
+ 	checkotherwm();
+ 	setup();
+ 	scan();
++  start_dwmstatus();
+ 	run();
+ 	cleanup();
++  stop_dwmstatus();
+ 	XCloseDisplay(dpy);
+ 	return EXIT_SUCCESS;
+ }

@@ -19,19 +19,34 @@ Index: dwm-6.0/dwm.c
  static Monitor *recttomon(int x, int y, int w, int h);
  static void resize(Client *c, int x, int y, int w, int h, Bool interact);
  static void resizeclient(Client *c, int x, int y, int w, int h);
-@@ -1357,6 +1358,12 @@ quit(const Arg *arg) {
+@@ -281,6 +282,7 @@ static void (*handler[LASTEvent]) (XEven
+ };
+ static Atom wmatom[WMLast], netatom[NetLast];
+ static Bool running = True;
++static Bool should_restart = False;
+ static Cursor cursor[CurLast];
+ static Display *dpy;
+ static DC dc;
+@@ -1357,6 +1359,12 @@ quit(const Arg *arg) {
  	running = False;
  }
  
 +void
 +restart(const Arg *arg) {
-+  kill(getppid(), SIGUSR1);
++  should_restart = True;
 +  running = False;
 +}
 +
  Monitor *
  recttomon(int x, int y, int w, int h) {
  	Monitor *m, *r = selmon;
+@@ -2204,5 +2212,6 @@ main(int argc, char *argv[]) {
+ 	cleanup();
+   stop_dwmstatus();
+ 	XCloseDisplay(dpy);
++  if (should_restart) return 42;
+ 	return EXIT_SUCCESS;
+ }
 Index: dwm-6.0/config.def.h
 ===================================================================
 --- dwm-6.0.orig/config.def.h

@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 
 volatile int should_restart_dwm = 0;
 pid_t dwm_pid = 0;
@@ -23,13 +24,25 @@ pid_t start_subprocess(const char *cmd[])
   return 0;
 }
 
+void run(const char *cmd[])
+{
+  pid_t child;
+
+  if ((child = vfork()) == 0) {
+    execvp(cmd[0], (char * const *)cmd);
+  }
+  else {
+    waitpid(child, NULL, 0);
+  }
+}
+
 void SIGCHLD_handler(int sig, siginfo_t *siginfo, void *ignore)
 {
   printf("child(%d) exited, code %d\n", siginfo->si_pid, siginfo->si_status);
   
   if (siginfo->si_pid == dwm_pid) {
-    if (should_restart_dwm) {
-      start_subprocess(CMD{"dwm", NULL});
+    if (siginfo->si_status == 42) {
+      ASSERT(dwm_pid = start_subprocess(CMD{"dwm", NULL}));
       should_restart_dwm = 0;
     }
     else {
@@ -39,11 +52,6 @@ void SIGCHLD_handler(int sig, siginfo_t *siginfo, void *ignore)
 }
 
 
-void SIGUSR1_handler(int sig, siginfo_t *siginfo, void *ignore)
-{
-  should_restart_dwm = 1;
-}
-
 int main(int argc, char **argv)
 {
   //绑定SIGCHLD
@@ -52,10 +60,16 @@ int main(int argc, char **argv)
   act_sigchld.sa_sigaction = SIGCHLD_handler;
   sigaction(SIGCHLD, &act_sigchld, NULL);
 
-  //绑定SIGUSR1
-  struct sigaction act_sigusr1;
-  act_sigusr1.sa_sigaction = SIGUSR1_handler;
-  sigaction(SIGUSR1, &act_sigusr1, NULL);
+  //设定X
+  run(CMD{"xset", "+fp", "/usr/share/fonts/bitmap", NULL});
+  run(CMD{"xset", "fp", "rehash", NULL});
+
+  //配置MPC
+  setenv("MPD_HOST", "Yayoi@localhost", 1);
+  setenv("MPD_PORT", "15903", 1);
+
+  start_subprocess(CMD{"urxvtd", NULL});
+  start_subprocess(CMD{"start-pulseaudio-x11", NULL});
 
   //启动DWM
   ASSERT(dwm_pid = start_subprocess(CMD{"dwm", NULL}));

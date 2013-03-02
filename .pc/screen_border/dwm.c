@@ -282,6 +282,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 };
 static Atom wmatom[WMLast], netatom[NetLast];
 static Bool running = True;
+static Bool should_restart = False;
 static Cursor cursor[CurLast];
 static Display *dpy;
 static DC dc;
@@ -1360,7 +1361,7 @@ quit(const Arg *arg) {
 
 void
 restart(const Arg *arg) {
-  kill(getppid(), SIGUSR1);
+  should_restart = True;
   running = False;
 }
 
@@ -2176,6 +2177,23 @@ zoom(const Arg *arg) {
 	pop(c);
 }
 
+pid_t dwmstatus_pid;
+void
+start_dwmstatus() {
+	if((dwmstatus_pid = fork()) == 0) {
+		if(dpy)
+			close(ConnectionNumber(dpy));
+		setsid();
+		execlp("dwmstatus", "dwmstatus", NULL);
+		exit(EXIT_SUCCESS);
+	}
+}
+
+void
+stop_dwmstatus() {
+  kill(dwmstatus_pid, SIGKILL);
+}
+
 int
 main(int argc, char *argv[]) {
 	if(argc == 2 && !strcmp("-v", argv[1]))
@@ -2189,8 +2207,11 @@ main(int argc, char *argv[]) {
 	checkotherwm();
 	setup();
 	scan();
+  start_dwmstatus();
 	run();
 	cleanup();
+  stop_dwmstatus();
 	XCloseDisplay(dpy);
+  if (should_restart) return 42;
 	return EXIT_SUCCESS;
 }
